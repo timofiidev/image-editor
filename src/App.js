@@ -1,27 +1,45 @@
-import { useState, useRef } from "react";
+import { Button, Grid, Select, MenuItem, TextField, Typography, Stack } from "@mui/material";
+import html2canvas from "html2canvas";
+import { useRef, useState } from "react";
 import { Rnd } from "react-rnd";
 import './App.css';
-import html2canvas from "html2canvas";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
+import { styled } from '@mui/material/styles';
+import AddIcon from '@mui/icons-material/Add';
+import CreateIcon from '@mui/icons-material/Create';
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
+const fonts = ['Arial', 'Helvetica', 'Verdana', 'Times New Roman'];
 
 function App() {
-  const fonts = ['Arial', 'Helvetica', 'Verdana', 'Times New Roman'];
-
-  const [texts, setTexts] = useState(
-    ["The sun shone brightly in the clear blue sky, warming the earth below.",
-      "She walked along the winding path, surrounded by towering trees and the sound of chirping birds.",
-      "As night fell, the stars twinkled in the velvety darkness, casting a magical glow over the sleeping countryside."],
-  );
-  const [xs, setXs] = useState([0, 0, 0])
-  const [ys, setYs] = useState([0, 0, 0])
+  const [texts, setTexts] = useState([]);
+  const [xs, setXs] = useState([])
+  const [ys, setYs] = useState([])
   const [selected, setSelected] = useState(-1);
   const [selectedText, setSelectedText] = useState("")
   const [selectedFontSize, setSelectedFontSize] = useState(12)
   const [selectedFontFamily, setSelectedFontFamily] = useState('Arial')
-  const [fontSizes, setFontSizes] = useState([12, 12, 12])
-  const [fontFamilies, setFontFamilies] = useState(['Arial', 'Arial', 'Arial']);
+  const [fontSizes, setFontSizes] = useState([])
+  const [fontFamilies, setFontFamilies] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const canvasRef = useRef(null);
   const imageInputRef = useRef(null);
+  const [imageX, setImageX] = useState(0);
+  const [imageY, setImageY] = useState(0);
+  const [imageWidth, setImageWidth] = useState(0);
+  const [imageHeight, setImageHeight] = useState(0);
 
   const setX = (index, x) => {
     const newXs = [...xs]
@@ -83,7 +101,15 @@ function App() {
     const reader = new FileReader();
 
     reader.onload = function (event) {
-      setSelectedImage(event.target.result);
+      const img = new Image();
+      img.onload = function () {
+        const width = img.width;
+        const height = img.height;
+        setImageWidth(width);
+        setImageHeight(height);
+        setSelectedImage(event.target.result);
+      };
+      img.src = event.target.result;
     };
 
     reader.readAsDataURL(file);
@@ -91,33 +117,163 @@ function App() {
 
   const exportImage = () => {
     html2canvas(canvasRef.current).then((canvas) => {
-      const img = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
+      // Create a new canvas to hold the cropped image
+      const croppedCanvas = document.createElement('canvas');
+      const croppedContext = croppedCanvas.getContext('2d');
+
+      console.log(imageX, imageY, imageWidth, imageHeight)
+
+      // Define the cropping dimensions
+      const cropX = imageX;
+      const cropY = imageY;
+      const cropWidth = imageWidth;
+      const cropHeight = imageHeight;
+
+      // Set the dimensions of the cropped canvas
+      croppedCanvas.width = cropWidth;
+      croppedCanvas.height = cropHeight;
+
+      // Perform the cropping
+      croppedContext.drawImage(
+        canvas,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        cropWidth,
+        cropHeight
+      );
+
+      // Convert the cropped canvas to a data URL and download it
+      const img = croppedCanvas.toDataURL('image/png');
+      const link = document.createElement('a');
       link.href = img;
-      link.download = "merged_image.png";
+      link.download = 'cropped_image.png';
       link.click();
     });
   };
 
+  const createNew = () => {
+    setTexts([]);
+    setXs([]);
+    setYs([]);
+    setSelected(-1);
+    setSelectedText("")
+    setSelectedFontSize(12)
+    setSelectedFontFamily('Arial')
+    setFontSizes([])
+    setFontFamilies([]);
+    setSelectedImage(null);
+    setImageX(0);
+    setImageY(0);
+    setImageWidth(0);
+    setImageHeight(0);
+  }
+
   return (
-    <div className="App">
-      <div className="flex">
-        <div id="left-sidebar">
-          <input type="file" accept="image/*" ref={imageInputRef} onChange={importImage} />
-          <button onClick={addText}>Add Text</button>
-          <textarea value={selectedText} onChange={(e) => changeSelectedText(e.target.value)} rows={10} />
-          <p>Font Size</p>
-          <input value={selectedFontSize} onChange={(e) => changeSelectedFontSize(e.target.value)} type="number" min={12}></input>
-          <p>Font Family</p>
-          <select value={selectedFontFamily} onChange={(e) => changeSelectedFontFamily(e.target.value)}>
-            {fonts.map((font, index) => (
-              <option key={index} value={font}>{font}</option>
-            ))}
-          </select>
-          <button onClick={exportImage}>Export Image</button>
-        </div>
-        <div className="canvas" ref={canvasRef}>
-          {selectedImage && <img src={selectedImage} style={{ width: '100%', height: '100%' }} />}
+    <Grid className="App">
+      <Grid className="flex">
+        <Stack id="left-sidebar" spacing={2} p={2}>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={createNew}
+            startIcon={<CreateIcon />}
+          >Create New</Button>
+          <Button
+            component="label"
+            role={undefined}
+            variant="contained"
+            tabIndex={-1}
+            startIcon={<CloudUploadIcon />}
+            fullWidth
+          >
+            Import Image
+            <VisuallyHiddenInput
+              type="file"
+              accept="image/*"
+              ref={imageInputRef}
+              onChange={importImage}
+            />
+          </Button>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={addText}
+            startIcon={<AddIcon />}
+          >Add Text</Button>
+          <TextField
+            id="outlined-multiline-static"
+            label="Edit Text"
+            multiline
+            rows={5}
+            value={selectedText}
+            onChange={(e) => changeSelectedText(e.target.value)}
+            disabled={selected == -1}
+          />
+          <Grid>
+            <Typography>Font Size</Typography>
+            <TextField
+              id="outlined-number"
+              type="number"
+              min={12}
+              value={selectedFontSize}
+              onChange={(e) => changeSelectedFontSize(e.target.value)}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              disabled={selected == -1}
+            />
+          </Grid>
+          <Grid>
+            <Typography>Font Family</Typography>
+            <Select
+              value={selectedFontFamily}
+              onChange={(e) => changeSelectedFontFamily(e.target.value)}
+              disabled={selected == -1}
+              fullWidth
+            >
+              {fonts.map((font, index) => (
+                <MenuItem key={index} value={font}>{font}</MenuItem>
+              ))}
+            </Select>
+          </Grid>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={exportImage}
+            startIcon={<CloudDownloadIcon />}
+          >Export Image</Button>
+        </Stack>
+        <Grid className="canvas" ref={canvasRef}>
+          {selectedImage &&
+            <Rnd
+              default={{
+                x: 0,
+                y: 0,
+                width: imageWidth,
+                height: imageHeight,
+              }}
+              width={imageWidth}
+              height={imageHeight}
+              position={{ x: imageX, y: imageY }}
+              onDragStop={(e, d) => {
+                setImageX(d.x);
+                setImageY(d.y);
+              }}
+              onResizeStop={(e, direction, ref, delta, position) => {
+                setImageWidth(ref.style.width.slice(0, -2))
+                setImageHeight(ref.style.height.slice(0, -2))
+                setImageX(position.x);
+                setImageY(position.y)
+              }}
+              bounds={".canvas"}
+            >
+              <img src={selectedImage} style={{ width: '100%', height: '100%' }} />
+            </Rnd>
+          }
           {texts.map((text, index) => (
             <Rnd
               default={{
@@ -141,15 +297,17 @@ function App() {
               key={index}
               bounds={".canvas"}
             >
-              <p style={{
+              <Typography style={{
                 fontSize: `${fontSizes[index]}px`,
                 fontFamily: fontFamilies[index]
-              }}>{text}</p>
+              }}>
+                {text}
+              </Typography>
             </Rnd>
           ))}
-        </div>
-      </div>
-    </div>
+        </Grid>
+      </Grid>
+    </Grid>
   );
 }
 
