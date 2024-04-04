@@ -19,7 +19,9 @@ function App() {
   const [selectedFontFamily, setSelectedFontFamily] = useState('Arial')
   const [fontSizes, setFontSizes] = useState([12, 12, 12])
   const [fontFamilies, setFontFamilies] = useState(['Arial', 'Arial', 'Arial']);
+  const [selectedImage, setSelectedImage] = useState(null);
   const canvasRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const setX = (index, x) => {
     const newXs = [...xs]
@@ -76,6 +78,17 @@ function App() {
     setSelectedFontFamily(newFontFamily)
   }
 
+  const importImage = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+      setSelectedImage(event.target.result);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
   const exportImage = () => {
     html2canvas(canvasRef.current).then((canvas) => {
       const img = canvas.toDataURL("image/png");
@@ -90,6 +103,7 @@ function App() {
     <div className="App">
       <div className="flex">
         <div id="left-sidebar">
+          <input type="file" accept="image/*" ref={imageInputRef} onChange={importImage} />
           <button onClick={addText}>Add Text</button>
           <textarea value={selectedText} onChange={(e) => changeSelectedText(e.target.value)} rows={10} />
           <p>Font Size</p>
@@ -103,7 +117,7 @@ function App() {
           <button onClick={exportImage}>Export Image</button>
         </div>
         <div className="canvas" ref={canvasRef}>
-          <img  src="./assets/SampleImage.png" style={{ width: '100%', height: '100%' }} />
+          {selectedImage && <img src={selectedImage} style={{ width: '100%', height: '100%' }} />}
           {texts.map((text, index) => (
             <Rnd
               default={{
