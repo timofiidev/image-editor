@@ -107,8 +107,11 @@ function App() {
       img.onload = function () {
         const width = img.width;
         const height = img.height;
-        setImageWidth(width);
-        setImageHeight(height);
+        const aspectRatio = width / height;
+        const newWidth = 700;
+        const newHeight = 700 / aspectRatio;
+        setImageWidth(newWidth);
+        setImageHeight(newHeight);
         setSelectedImage(event.target.result);
       };
       img.src = event.target.result;
@@ -116,6 +119,7 @@ function App() {
 
     reader.readAsDataURL(file);
   }
+
 
   const exportImage = () => {
     html2canvas(canvasRef.current).then((canvas) => {
@@ -275,7 +279,7 @@ function App() {
               }}
               bounds={".canvas"}
             >
-              <img src={selectedImage} style={{ width: '100%', height: '100%' }} />
+              <img src={selectedImage} style={{ width: 700 }} />
             </Rnd>
           }
           {texts.map((text, index) => (
