@@ -279,7 +279,7 @@ function App() {
               }}
               bounds={".canvas"}
             >
-              <img src={selectedImage} style={{ width: 700 }} />
+              <img src={selectedImage} style={{ width: '100%', height: '100%' }} />
             </Rnd>
           }
           {texts.map((text, index) => (
