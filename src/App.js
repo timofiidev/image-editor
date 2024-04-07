@@ -1,18 +1,17 @@
+import AddIcon from '@mui/icons-material/Add';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import FiberNewIcon from '@mui/icons-material/FiberNew';
 import SaveIcon from '@mui/icons-material/Save';
 import TitleIcon from '@mui/icons-material/Title';
-import EditIcon from '@mui/icons-material/Edit';
-import AddIcon from '@mui/icons-material/Add';
-import { Box, Modal, Button, Grid, MenuItem, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Grid, IconButton, MenuItem, Modal, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import html2canvas from "html2canvas";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Rnd } from "react-rnd";
 import './App.css';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -132,11 +131,11 @@ function App() {
         const aspectRatio = width / height;
         const newWidth = 700;
         const newHeight = 700 / aspectRatio;
-        
+
         const newTemplateImages = [...templateImages];
         newTemplateImages.push(event.target.result);
         setTemplateImages(newTemplateImages);
-        
+
         const newWidthes = [...templateImageWidthes];
         newWidthes.push(newWidth);
         setTemplateImageWidths(newWidthes)
@@ -261,29 +260,29 @@ function App() {
   return (
     <Grid className="App">
       <Stack style={{ height: '100vh' }}>
-        <Stack spacing={2} p={2} direction="row" alignItems="center" justifyContent="space-around">
+        <Stack pt={2} pb={2} direction="row" alignItems="center" justifyContent={"space-between"}>
+          <Stack direction="row" alignItems={"center"} spacing={1}>
           <Tooltip title="Create New">
-            <Button
-              variant="contained"
+            <IconButton
               onClick={createNew}
+              size='small'
             >
               <FiberNewIcon />
-            </Button>
+            </IconButton>
           </Tooltip>
           <Tooltip title="Use Template">
-            <Button
-              variant="contained"
+            <IconButton
               onClick={handleOpen}
+              size='small'
             >
               <SaveIcon />
-            </Button>
+            </IconButton>
           </Tooltip>
           <Tooltip title="Import Image">
-            <Button
-              component="label"
+            <IconButton
               role={undefined}
-              variant="contained"
               tabIndex={-1}
+              size="small"
             >
               <CloudUploadIcon />
               <VisuallyHiddenInput
@@ -292,17 +291,16 @@ function App() {
                 ref={imageInputRef}
                 onChange={importImage}
               />
-            </Button>
+            </IconButton>
           </Tooltip>
           <Tooltip title="Add Text">
-            <Button
-              variant="contained"
+            <IconButton
               onClick={addText}
+              size='small'
             >
               <TitleIcon />
-            </Button>
+            </IconButton>
           </Tooltip>
-
           <TextField
             id="outlined-multiline-static"
             label="Edit Text"
@@ -311,6 +309,7 @@ function App() {
             value={selectedText}
             onChange={(e) => changeSelectedText(e.target.value)}
             disabled={selected == -1}
+            size='small'
           />
           <Typography>Size</Typography>
           <TextField
@@ -323,24 +322,30 @@ function App() {
               shrink: true,
             }}
             disabled={selected == -1}
+            size='small'
+            style={{
+              width: 70
+            }}
           />
           <Typography>Font</Typography>
           <Select
             value={selectedFontFamily}
             onChange={(e) => changeSelectedFontFamily(e.target.value)}
             disabled={selected == -1}
+            size='small'
           >
             {fonts.map((font, index) => (
               <MenuItem key={index} value={font}>{font}</MenuItem>
             ))}
           </Select>
+          </Stack>
           <Tooltip title="Export Image">
-            <Button
-              variant="contained"
+            <IconButton
               onClick={exportImage}
+              size='small'
             >
               <CloudDownloadIcon />
-            </Button>
+            </IconButton>
           </Tooltip>
         </Stack>
         <Grid className="canvas" ref={canvasRef}>
@@ -431,11 +436,11 @@ function App() {
                       const updatedTemplateImages = [...templateImages];
                       updatedTemplateImages.splice(index, 1);
                       setTemplateImages(updatedTemplateImages);
-                  
+
                       const updatedTemplateImageWidthes = [...templateImageWidthes];
                       updatedTemplateImageWidthes.splice(index, 1);
                       setTemplateImageWidths(updatedTemplateImageWidthes);
-                  
+
                       const updatedTemplateImageHeightes = [...templateImageHeightes];
                       updatedTemplateImageHeightes.splice(index, 1);
                       setTemplateImageHeights(updatedTemplateImageHeightes);
