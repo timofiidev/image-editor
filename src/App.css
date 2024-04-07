@@ -62,7 +62,7 @@ p {
 }
 
 .canvas {
-  background: gray;
+  background: #EDF7FF;
   width: 100%;
   flex: 1
 }
