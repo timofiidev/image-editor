@@ -1,15 +1,18 @@
-import AddIcon from '@mui/icons-material/Add';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import CreateIcon from '@mui/icons-material/Create';
-import TitleIcon from '@mui/icons-material/Title';
 import FiberNewIcon from '@mui/icons-material/FiberNew';
-import { IconButton, Tooltip, Button, Grid, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import SaveIcon from '@mui/icons-material/Save';
+import TitleIcon from '@mui/icons-material/Title';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Modal, Button, Grid, MenuItem, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import html2canvas from "html2canvas";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import './App.css';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -23,9 +26,21 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  bgcolor: 'background.paper',
+  boxShadow: 24,
+  p: 4,
+  maxHeight: '90vh'
+};
+
 const fonts = ['Arial', 'Helvetica', 'Verdana', 'Times New Roman'];
 
 function App() {
+  const [open, setOpen] = useState(false);
   const [texts, setTexts] = useState([]);
   const [xs, setXs] = useState([])
   const [ys, setYs] = useState([])
@@ -42,7 +57,13 @@ function App() {
   const [imageY, setImageY] = useState(0);
   const [imageWidth, setImageWidth] = useState(0);
   const [imageHeight, setImageHeight] = useState(0);
+  const [templateImages, setTemplateImages] = useState([]);
+  const [templateImageWidthes, setTemplateImageWidths] = useState([]);
+  const [templateImageHeightes, setTemplateImageHeights] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
 
+  const handleOpen = () => { setOpen(true) }
+  const handleClose = () => { setOpen(false) }
   const setX = (index, x) => {
     const newXs = [...xs]
     newXs[index] = x
@@ -98,6 +119,38 @@ function App() {
     setSelectedFontFamily(newFontFamily)
   }
 
+
+  const addTemplateImage = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+      const img = new Image();
+      img.onload = function () {
+        const width = img.width;
+        const height = img.height;
+        const aspectRatio = width / height;
+        const newWidth = 700;
+        const newHeight = 700 / aspectRatio;
+        
+        const newTemplateImages = [...templateImages];
+        newTemplateImages.push(event.target.result);
+        setTemplateImages(newTemplateImages);
+        
+        const newWidthes = [...templateImageWidthes];
+        newWidthes.push(newWidth);
+        setTemplateImageWidths(newWidthes)
+
+        const newHeightes = [...templateImageHeightes];
+        newHeightes.push(newHeight);
+        setTemplateImageHeights(newHeightes);
+      };
+      img.src = event.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  }
+
   const importImage = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -119,7 +172,6 @@ function App() {
 
     reader.readAsDataURL(file);
   }
-
 
   const exportImage = () => {
     html2canvas(canvasRef.current).then((canvas) => {
@@ -178,6 +230,34 @@ function App() {
     setImageHeight(0);
   }
 
+  useEffect(() => {
+    const newTemplateImages = JSON.parse(localStorage.getItem('templateImages'))
+    if (newTemplateImages) setTemplateImages(newTemplateImages);
+    const newTemplateImageWidthes = JSON.parse(localStorage.getItem('templateImageWidthes'))
+    if (newTemplateImageWidthes) setTemplateImageWidths(newTemplateImageWidthes);
+    const newTemplateImageHeightes = JSON.parse(localStorage.getItem('templateImageHeightes'))
+    if (newTemplateImageHeightes) setTemplateImageHeights(newTemplateImageHeightes);
+    setInitialLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!initialLoading) {
+      localStorage.setItem('templateImages', JSON.stringify(templateImages));
+    }
+  }, [templateImages]);
+
+  useEffect(() => {
+    if (!initialLoading) {
+      localStorage.setItem('templateImageWidthes', JSON.stringify(templateImageWidthes));
+    }
+  }, [templateImageWidthes]);
+
+  useEffect(() => {
+    if (!initialLoading) {
+      localStorage.setItem('templateImageHeightes', JSON.stringify(templateImageHeightes));
+    }
+  }, [templateImageHeightes]);
+
   return (
     <Grid className="App">
       <Stack style={{ height: '100vh' }}>
@@ -188,6 +268,14 @@ function App() {
               onClick={createNew}
             >
               <FiberNewIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Use Template">
+            <Button
+              variant="contained"
+              onClick={handleOpen}
+            >
+              <SaveIcon />
             </Button>
           </Tooltip>
           <Tooltip title="Import Image">
@@ -314,6 +402,71 @@ function App() {
             </Rnd>
           ))}
         </Grid>
+        <Modal
+          open={open}
+          onClose={handleClose}
+        >
+          <Box sx={style} style={{
+            overflowY: "scroll"
+          }}>
+            <Typography variant="h6" component="h4">
+              Choose template image
+            </Typography>
+            {templateImages.map((templateImage, index) => (
+              <Stack direction={"row"} alignItems={"center"} mt={2} key={index}>
+                <img src={templateImage} width="250" />
+                <Stack spacing={2} ml={2}>
+                  <Tooltip title="Use This">
+                    <Button variant="contained" onClick={() => {
+                      setSelectedImage(templateImage);
+                      setImageWidth(templateImageWidthes[index]);
+                      setImageHeight(templateImageHeightes[index]);
+                      handleClose();
+                    }}>
+                      <DoneOutlineIcon />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Delete Image" >
+                    <Button variant="contained" onClick={() => {
+                      const updatedTemplateImages = [...templateImages];
+                      updatedTemplateImages.splice(index, 1);
+                      setTemplateImages(updatedTemplateImages);
+                  
+                      const updatedTemplateImageWidthes = [...templateImageWidthes];
+                      updatedTemplateImageWidthes.splice(index, 1);
+                      setTemplateImageWidths(updatedTemplateImageWidthes);
+                  
+                      const updatedTemplateImageHeightes = [...templateImageHeightes];
+                      updatedTemplateImageHeightes.splice(index, 1);
+                      setTemplateImageHeights(updatedTemplateImageHeightes);
+                    }} >
+                      <DeleteIcon />
+                    </Button>
+                  </Tooltip>
+                </Stack>
+              </Stack>
+            ))}
+
+            <Stack justifyContent="center" alignItems="center" style={{ border: '1px solid black', borderRadius: 20, width: 250, height: 200 }} mt={2}>
+              <Tooltip title="Add New">
+                <Button
+                  component="label"
+                  role={undefined}
+                  variant="contained"
+                  tabIndex={-1}
+                >
+                  <AddIcon />
+                  <VisuallyHiddenInput
+                    type="file"
+                    accept="image/*"
+                    ref={imageInputRef}
+                    onChange={addTemplateImage}
+                  />
+                </Button>
+              </Tooltip>
+            </Stack>
+          </Box>
+        </Modal>
       </Stack>
     </Grid>
   );
