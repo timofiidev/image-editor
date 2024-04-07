@@ -1,13 +1,13 @@
-import { Button, Grid, Select, MenuItem, TextField, Typography, Stack } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CreateIcon from '@mui/icons-material/Create';
+import { IconButton, Tooltip, Button, Grid, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { styled } from '@mui/material/styles';
 import html2canvas from "html2canvas";
 import { useRef, useState } from "react";
 import { Rnd } from "react-rnd";
 import './App.css';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
-import { styled } from '@mui/material/styles';
-import AddIcon from '@mui/icons-material/Add';
-import CreateIcon from '@mui/icons-material/Create';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -174,78 +174,79 @@ function App() {
 
   return (
     <Grid className="App">
-      <Grid className="flex">
-        <Stack id="left-sidebar" spacing={2} p={2}>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={createNew}
-            startIcon={<CreateIcon />}
-          >Create New</Button>
-          <Button
-            component="label"
-            role={undefined}
-            variant="contained"
-            tabIndex={-1}
-            startIcon={<CloudUploadIcon />}
-            fullWidth
-          >
-            Import Image
-            <VisuallyHiddenInput
-              type="file"
-              accept="image/*"
-              ref={imageInputRef}
-              onChange={importImage}
-            />
-          </Button>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={addText}
-            startIcon={<AddIcon />}
-          >Add Text</Button>
+      <Stack style={{ height: '100vh' }}>
+        <Stack spacing={2} p={2} direction="row" alignItems="center" justifyContent="space-around">
+          <Tooltip title="Create New">
+            <Button
+              variant="contained"
+              onClick={createNew}
+            >
+              <CreateIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Import Image">
+            <Button
+              component="label"
+              role={undefined}
+              variant="contained"
+              tabIndex={-1}
+            >
+              <CloudUploadIcon />
+              <VisuallyHiddenInput
+                type="file"
+                accept="image/*"
+                ref={imageInputRef}
+                onChange={importImage}
+              />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Add Text">
+            <Button
+              variant="contained"
+              onClick={addText}
+            >
+              <AddIcon />
+            </Button>
+          </Tooltip>
+
           <TextField
             id="outlined-multiline-static"
             label="Edit Text"
-            multiline
             rows={5}
             value={selectedText}
             onChange={(e) => changeSelectedText(e.target.value)}
             disabled={selected == -1}
           />
-          <Grid>
-            <Typography>Font Size</Typography>
-            <TextField
-              id="outlined-number"
-              type="number"
-              min={12}
-              value={selectedFontSize}
-              onChange={(e) => changeSelectedFontSize(e.target.value)}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              disabled={selected == -1}
-            />
-          </Grid>
-          <Grid>
-            <Typography>Font Family</Typography>
-            <Select
-              value={selectedFontFamily}
-              onChange={(e) => changeSelectedFontFamily(e.target.value)}
-              disabled={selected == -1}
-              fullWidth
+          <Typography>Size</Typography>
+          <TextField
+            id="outlined-number"
+            type="number"
+            min={12}
+            value={selectedFontSize}
+            onChange={(e) => changeSelectedFontSize(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            disabled={selected == -1}
+          />
+          <Typography>Font</Typography>
+          <Select
+            value={selectedFontFamily}
+            onChange={(e) => changeSelectedFontFamily(e.target.value)}
+            disabled={selected == -1}
+          >
+            {fonts.map((font, index) => (
+              <MenuItem key={index} value={font}>{font}</MenuItem>
+            ))}
+          </Select>
+          <Tooltip title="Export Image">
+            <Button
+              variant="contained"
+              onClick={exportImage}
             >
-              {fonts.map((font, index) => (
-                <MenuItem key={index} value={font}>{font}</MenuItem>
-              ))}
-            </Select>
-          </Grid>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={exportImage}
-            startIcon={<CloudDownloadIcon />}
-          >Export Image</Button>
+              <CloudDownloadIcon />
+            </Button>
+          </Tooltip>
         </Stack>
         <Grid className="canvas" ref={canvasRef}>
           {selectedImage &&
@@ -306,7 +307,7 @@ function App() {
             </Rnd>
           ))}
         </Grid>
-      </Grid>
+      </Stack>
     </Grid>
   );
 }
