@@ -2,6 +2,8 @@ import AddIcon from '@mui/icons-material/Add';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CreateIcon from '@mui/icons-material/Create';
+import TitleIcon from '@mui/icons-material/Title';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
 import { IconButton, Tooltip, Button, Grid, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import html2canvas from "html2canvas";
@@ -181,7 +183,7 @@ function App() {
               variant="contained"
               onClick={createNew}
             >
-              <CreateIcon />
+              <FiberNewIcon />
             </Button>
           </Tooltip>
           <Tooltip title="Import Image">
@@ -205,14 +207,15 @@ function App() {
               variant="contained"
               onClick={addText}
             >
-              <AddIcon />
+              <TitleIcon />
             </Button>
           </Tooltip>
 
           <TextField
             id="outlined-multiline-static"
             label="Edit Text"
-            rows={5}
+            multiline
+            rows={1}
             value={selectedText}
             onChange={(e) => changeSelectedText(e.target.value)}
             disabled={selected == -1}
@@ -301,8 +304,8 @@ function App() {
               <Typography style={{
                 fontSize: `${fontSizes[index]}px`,
                 fontFamily: fontFamilies[index]
-              }}>
-                {text}
+              }} textAlign={"left"}>
+                <div dangerouslySetInnerHTML={{ __html: text.replace(/\n\r?/g, '<br>') }} />
               </Typography>
             </Rnd>
           ))}
