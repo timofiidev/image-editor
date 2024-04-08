@@ -52,6 +52,7 @@ function App() {
   const [selectedImage, setSelectedImage] = useState(null);
   const canvasRef = useRef(null);
   const imageInputRef = useRef(null);
+  const templateImageInputRef = useRef(null);
   const [imageX, setImageX] = useState(0);
   const [imageY, setImageY] = useState(0);
   const [imageWidth, setImageWidth] = useState(0);
@@ -280,6 +281,7 @@ function App() {
           </Tooltip>
           <Tooltip title="Import Image">
             <IconButton
+              component="label"
               role={undefined}
               tabIndex={-1}
               size="small"
@@ -464,7 +466,7 @@ function App() {
                   <VisuallyHiddenInput
                     type="file"
                     accept="image/*"
-                    ref={imageInputRef}
+                    ref={templateImageInputRef}
                     onChange={addTemplateImage}
                   />
                 </Button>
